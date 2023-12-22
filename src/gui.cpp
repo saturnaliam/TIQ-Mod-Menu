@@ -142,6 +142,7 @@ void gui::CreateImGui() noexcept {
   ImGuiStyle& style = ImGui::GetStyle();
   style.FrameRounding = 7;
 
+  game.setLevelAddress();
 
   ImGui_ImplWin32_Init(window);
   ImGui_ImplDX9_Init(device);
