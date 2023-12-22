@@ -7,7 +7,7 @@ Game::Game() {
 void Game::setLevelAddress() {
   int temp = reinterpret_cast<int>(GetModuleHandle(NULL));
 
-  for (int i = 0; i < this->pointerOffsets.size() - 1; i++) {
+  for (size_t i = 0; i < this->pointerOffsets.size() - 1; i++) {
     temp = *reinterpret_cast<int*>(temp + this->pointerOffsets[i]);
   }
 

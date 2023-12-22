@@ -220,21 +220,16 @@ void gui::Render() noexcept {
 void gui::renderMemorySection() {
   ImGui::SeparatorText("Memory");
 
-  const char* flash_versions[] = {"Flash Player 32 SA"};
+  const char* flash_versions[] = {"Flash Player 32"};
   static int current_version = 0;
   ImGui::Combo("Flash Version", &current_version, flash_versions, IM_ARRAYSIZE(flash_versions));
 
   ImGui::IntBox("Level Address", reinterpret_cast<int>(game.levelAddress), "0x%X");
 
   if (ImGui::CollapsingHeader("Pointer Offsets")) {
-    ImGui::BulletText("0xC95B64");
-    ImGui::BulletText("0x24");
-    ImGui::BulletText("0xA8C");
-    ImGui::BulletText("0x4");
-    ImGui::BulletText("0x2C");
-    ImGui::BulletText("0x50");
-    ImGui::BulletText("0x264");
-    ImGui::BulletText("0x4C");
+    for (std::vector<int>::iterator it = game.pointerOffsets.begin(); it != game.pointerOffsets.end(); ++it) {
+      ImGui::BulletText("0x%X", *it);
+    }
   }
 }
 
