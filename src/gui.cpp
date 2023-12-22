@@ -138,7 +138,7 @@ void gui::CreateImGui() noexcept {
 
   io.IniFilename = NULL;
 
-  ImGui::StyleColorsDark();
+  ImGui::StyleColorsClassic();
   ImGuiStyle& style = ImGui::GetStyle();
   style.FrameRounding = 7;
 
@@ -196,20 +196,11 @@ void gui::Render() noexcept {
   ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_None;
   if (ImGui::BeginTabBar("TabBar", tabFlags)) {
     if (ImGui::BeginTabItem("Game Info")) {
-      ImGui::SeparatorText("Memory");
-      const char* flash_versions[] = {"Flash Player 32 SA"};
-      static int current_version = 0;
-      ImGui::Combo("Flash Version", &current_version, flash_versions, IM_ARRAYSIZE(flash_versions));
-      ImGui::Text("Level Address: 0x%X", game.levelAddress);
-      if (ImGui::CollapsingHeader("Pointer Offsets")) {
-        ImGui::Text("0xC95B64\n0x24\n0xA8C\n0x4\n0x2C\n0x50\n0x264\n0x4C");
-      }
 
-      ImGui::SeparatorText("Game Values");
-      ImGui::Text("Current Scene: %d", *game.levelAddress);
-      ImGui::Text("Relative Mouse Position: (, )");
-      ImGui::Text("Absolute Mouse Position: (, )");
-      ImGui::Text("Window Position: (, )");
+      renderMemorySection();
+
+      renderValuesSection();
+
       ImGui::EndTabItem();
     }
 
@@ -224,4 +215,35 @@ void gui::Render() noexcept {
     ImGui::EndTabBar();
   }
   ImGui::End();
+}
+
+void gui::renderMemorySection() {
+  ImGui::SeparatorText("Memory");
+
+  const char* flash_versions[] = {"Flash Player 32 SA"};
+  static int current_version = 0;
+  ImGui::Combo("Flash Version", &current_version, flash_versions, IM_ARRAYSIZE(flash_versions));
+
+  ImGui::IntBox("Level Address", reinterpret_cast<int>(game.levelAddress), "0x%X");
+
+  if (ImGui::CollapsingHeader("Pointer Offsets")) {
+    ImGui::BulletText("0xC95B64");
+    ImGui::BulletText("0x24");
+    ImGui::BulletText("0xA8C");
+    ImGui::BulletText("0x4");
+    ImGui::BulletText("0x2C");
+    ImGui::BulletText("0x50");
+    ImGui::BulletText("0x264");
+    ImGui::BulletText("0x4C");
+  }
+}
+
+void gui::renderValuesSection() {
+  ImGui::SeparatorText("Game Values");
+
+  ImGui::IntBox("Current Scene", *game.levelAddress);
+}
+
+void ImGui::IntBox(const char* label, int v, const char* format) {
+  ImGui::DragInt(label, &v, 0, NULL, NULL, format);
 }

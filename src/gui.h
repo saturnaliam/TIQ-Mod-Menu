@@ -29,4 +29,11 @@ namespace gui {
   void BeginRender() noexcept;
   void EndRender() noexcept;
   void Render() noexcept;
+
+  void renderMemorySection();
+  void renderValuesSection();
+}
+
+namespace ImGui {
+  void IntBox(const char* label, int v, const char* format = "%d");
 }
