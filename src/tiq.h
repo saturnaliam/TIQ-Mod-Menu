@@ -5,7 +5,9 @@
 
 class Game {
   public:
+    std::vector<int> pointerOffsets;
     int* levelAddress;
 
+    Game();
     void setLevelAddress();
 };
