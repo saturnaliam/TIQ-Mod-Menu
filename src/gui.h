@@ -35,5 +35,5 @@ namespace gui {
 }
 
 namespace ImGui {
-  void IntBox(const char* label, int v, const char* format = "%d");
+  inline void IntBox(const char* label, int v, const char* format = "%d");
 }

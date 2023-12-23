@@ -4,8 +4,7 @@
 #include "../imgui/imgui_impl_dx9.h"
 #include "../imgui/imgui_impl_win32.h"
 #include "tiq.h"
-
-Game game;
+#include "global.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND window, UINT message, WPARAM wideParameter, LPARAM longParameter);
 
@@ -142,8 +141,6 @@ void gui::CreateImGui() noexcept {
   ImGuiStyle& style = ImGui::GetStyle();
   style.FrameRounding = 7;
 
-  game.setLevelAddress();
-
   ImGui_ImplWin32_Init(window);
   ImGui_ImplDX9_Init(device);
 }
@@ -224,10 +221,10 @@ void gui::renderMemorySection() {
   static int current_version = 0;
   ImGui::Combo("Flash Version", &current_version, flash_versions, IM_ARRAYSIZE(flash_versions));
 
-  ImGui::IntBox("Level Address", reinterpret_cast<int>(game.levelAddress), "0x%X");
+  ImGui::IntBox("Level Address", reinterpret_cast<int>(global::game.levelAddress), "0x%X");
 
   if (ImGui::CollapsingHeader("Pointer Offsets")) {
-    for (std::vector<int>::iterator it = game.pointerOffsets.begin(); it != game.pointerOffsets.end(); ++it) {
+    for (std::vector<int>::iterator it = global::game.pointerOffsets.begin(); it != global::game.pointerOffsets.end(); ++it) {
       ImGui::BulletText("0x%X", *it);
     }
   }
@@ -236,9 +233,9 @@ void gui::renderMemorySection() {
 void gui::renderValuesSection() {
   ImGui::SeparatorText("Game Values");
 
-  ImGui::IntBox("Current Scene", *game.levelAddress);
+  ImGui::IntBox("Current Scene", *global::game.levelAddress);
 }
 
-void ImGui::IntBox(const char* label, int v, const char* format) {
+inline void ImGui::IntBox(const char* label, int v, const char* format) {
   ImGui::DragInt(label, &v, 0, NULL, NULL, format);
 }

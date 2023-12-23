@@ -1,6 +1,6 @@
 #include "gui.h"
 #include "tiq.h"
-
+#include "global.h"
 #include <thread>
 
 DWORD_PTR __stdcall eject_thread(LPVOID lpParameter) {
@@ -9,6 +9,8 @@ DWORD_PTR __stdcall eject_thread(LPVOID lpParameter) {
 }
 
 int main(HMODULE hModule) {
+  global::game.setLevelAddress();
+
   gui::CreateHWindow("TIQ Mod Menu", "Mod Menu Class");
   gui::CreateDevice();
   gui::CreateImGui();
