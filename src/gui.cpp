@@ -211,6 +211,7 @@ void gui::Render() noexcept {
         ImGui::EndTabItem();
       }
     } else {
+      // Detection of Flash Player version
       if (ImGui::BeginTabItem("Flash Version")) {
         ImGui::SeparatorText("Detecting Flash Version");
 
@@ -247,7 +248,7 @@ void gui::renderMemorySection() {
   ImGui::IntBox("Level Address", reinterpret_cast<int>(global::game.levelAddress), "0x%X");
 
   if (ImGui::CollapsingHeader("Pointer Offsets")) {
-    for (std::vector<int>::iterator it = global::game.pointerOffsets.begin(); it != global::game.pointerOffsets.end(); ++it) {
+    for (auto it = global::game.pointerOffsets.begin(); it != global::game.pointerOffsets.end(); ++it) {
       ImGui::BulletText("0x%X", *it);
     }
   }

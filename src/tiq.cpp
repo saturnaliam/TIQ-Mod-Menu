@@ -1,12 +1,31 @@
 #include "tiq.h"
 #include "global.h"
 
-Game::Game() {
+void initFlashVersions() {
+    // Flash Player 32 SA
+    GameVersion Flash32;
+    Flash32.version = FL_32;
+    Flash32.title = "Adobe Flash Player 32";
+    Flash32.pointerOffsets = { 0xC95B64, 0x24, 0xA8C, 0x4, 0x2C, 0x50, 0x264, 0x4C };
 
+    // Flash Player 11 SA
+    GameVersion Flash11;
+    Flash11.version = FL_32;
+    Flash11.title = "Adobe Flash Player 11";
+    Flash11.pointerOffsets = { 0xC95B64, 0x24, 0xA8C, 0x4, 0x2C, 0x50, 0x264, 0x4C };
+
+    global::flashVersions.push_back(Flash11);
+    global::flashVersions.push_back(Flash32);
+  }
+
+Game::Game() {
+  initFlashVersions();
+  this->initialized = false;
+  this->gameVersion = NONE;
+  this->levelAddress = nullptr;
 }
 
-Version version = NONE;
-BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
+BOOL CALLBACK Game::EnumWindowsProc(HWND hwnd, LPARAM lParam) {
   DWORD targetProcessId = GetCurrentProcessId();
   DWORD processId;
   GetWindowThreadProcessId(hwnd, &processId);
@@ -17,10 +36,11 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam) {
     std::string windowTitle = windowTitleC;
 
     if (windowTitle != global::menuTitle) {
-      if (windowTitle == "Adobe Flash Player 32") {
-        version = FL_32;
-      } else if (windowTitle == "Adobe Flash Player 11") {
-        version = FL_11;
+      for (auto it : global::flashVersions) {
+        if (windowTitle == it.title) {
+          reinterpret_cast<Game*>(lParam)->detectedVersion = it;
+          break;
+        }
       }
     }
     return FALSE;
@@ -35,11 +55,7 @@ void Game::initialize() {
   if (this->gameVersion != NONE) {
     this->initialized = true;
 
-    if (this->gameVersion == FL_32) {
-      this->pointerOffsets = { 0xC95B64, 0x24, 0xA8C, 0x4, 0x2C, 0x50, 0x264, 0x4C };
-    } else {
-
-    }
+    this->pointerOffsets = this->detectedVersion.pointerOffsets;
 
     this->getLevelAddress();
   }
@@ -47,17 +63,18 @@ void Game::initialize() {
 
 void Game::getVersion() {
   if (this->gameVersion != NONE) return;
-  EnumWindows(EnumWindowsProc, 0);
+  EnumWindows(this->EnumWindowsProc, reinterpret_cast<LPARAM>(this));
 
-  this->gameVersion = version;
+
+  this->gameVersion = this->detectedVersion.version;
 }
 
 void Game::getLevelAddress() {
-  int temp = reinterpret_cast<int>(GetModuleHandle(NULL));
+  uintptr_t temp = reinterpret_cast<uintptr_t>(GetModuleHandle(NULL));
 
   for (size_t i = 0; i < this->pointerOffsets.size() - 1; i++) {
-    temp = *reinterpret_cast<int*>(temp + this->pointerOffsets[i]);
+    temp = *reinterpret_cast<uintptr_t*>(temp + this->pointerOffsets[i]);
   }
 
-  this->levelAddress = reinterpret_cast<int*>(temp + this->pointerOffsets.back());
+  this->levelAddress = reinterpret_cast<uintptr_t*>(temp + this->pointerOffsets.back());
 }
