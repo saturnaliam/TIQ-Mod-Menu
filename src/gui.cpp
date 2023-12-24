@@ -188,25 +188,53 @@ void gui::EndRender() noexcept {
 void gui::Render() noexcept {
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize({WIDTH, HEIGHT});
-  ImGui::Begin("TIQ Mod Menu", &exit, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
+  ImGui::Begin(global::menuTitle.c_str(), &exit, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
 
   ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_None;
+
   if (ImGui::BeginTabBar("TabBar", tabFlags)) {
-    if (ImGui::BeginTabItem("Game Info")) {
+    if (global::game.initialized) {
+      if (ImGui::BeginTabItem("Game Info")) {
 
-      renderMemorySection();
+        renderMemorySection();
 
-      renderValuesSection();
+        renderValuesSection();
 
-      ImGui::EndTabItem();
-    }
+        ImGui::EndTabItem();
+      }
 
-    if(ImGui::BeginTabItem("Rich Presence")) {
-      ImGui::EndTabItem();
-    }
+      if(ImGui::BeginTabItem("Rich Presence")) {
+        ImGui::EndTabItem();
+      }
 
-    if(ImGui::BeginTabItem("Level Chooser")) {
-      ImGui::EndTabItem();
+      if(ImGui::BeginTabItem("Level Chooser")) {
+        ImGui::EndTabItem();
+      }
+    } else {
+      if (ImGui::BeginTabItem("Flash Version")) {
+        ImGui::SeparatorText("Detecting Flash Version");
+
+        const char* flash_versions[] = {"Flash Player 32", "Flash Player 11"};
+        static int current_version = -1;
+        ImGui::Combo("Flash Version", &current_version, flash_versions, IM_ARRAYSIZE(flash_versions));
+        ImGui::SetItemTooltip("Select the current version of Flash Player\nor click on the Flash Player window.");
+
+        switch (current_version) {
+          case 0:
+            global::game.gameVersion = FL_32;
+            break;
+          case 1:
+            global::game.gameVersion = FL_11;
+            break;
+          default:
+            global::game.gameVersion = NONE;
+            break;
+        }
+
+        global::game.initialize();
+
+        ImGui::EndTabItem();
+      }
     }
 
     ImGui::EndTabBar();
@@ -216,11 +244,6 @@ void gui::Render() noexcept {
 
 void gui::renderMemorySection() {
   ImGui::SeparatorText("Memory");
-
-  const char* flash_versions[] = {"Flash Player 32"};
-  static int current_version = 0;
-  ImGui::Combo("Flash Version", &current_version, flash_versions, IM_ARRAYSIZE(flash_versions));
-
   ImGui::IntBox("Level Address", reinterpret_cast<int>(global::game.levelAddress), "0x%X");
 
   if (ImGui::CollapsingHeader("Pointer Offsets")) {
