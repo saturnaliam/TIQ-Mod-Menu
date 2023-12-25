@@ -190,6 +190,14 @@ void gui::Render() noexcept {
   ImGui::SetNextWindowSize({WIDTH, HEIGHT});
   ImGui::Begin(global::menuTitle.c_str(), &exit, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
 
+  if (ImGui::BeginMenuBar()) {
+    if (ImGui::BeginMenu("Menu")) {
+      ImGui::MenuItem("About");
+      ImGui::EndMenu();
+    }
+    ImGui::EndMenuBar();
+  }
+
   ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_None;
 
   if (ImGui::BeginTabBar("TabBar", tabFlags)) {
@@ -248,8 +256,8 @@ void gui::renderMemorySection() {
   ImGui::IntBox("Level Address", reinterpret_cast<int>(global::game.levelAddress), "0x%X");
 
   if (ImGui::CollapsingHeader("Pointer Offsets")) {
-    for (auto it = global::game.pointerOffsets.begin(); it != global::game.pointerOffsets.end(); ++it) {
-      ImGui::BulletText("0x%X", *it);
+    for (auto it : global::game.pointerOffsets) {
+      ImGui::BulletText("0x%X", it);
     }
   }
 }

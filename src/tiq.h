@@ -5,8 +5,6 @@
 #include <cstdint>
 #include <vector>
 
-//extern BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
-
 enum Version {
   NONE,
   FL_32,
