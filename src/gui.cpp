@@ -188,6 +188,8 @@ void gui::EndRender() noexcept {
 }
 
 void gui::Render() noexcept {
+  global::game.update();
+
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize({WIDTH, HEIGHT});
   ImGui::Begin(global::menuTitle.c_str(), &exit, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar);
@@ -232,6 +234,8 @@ void gui::Render() noexcept {
           global::game.detectedVersion = global::flashVersions[current_version];
         }
 
+        ImGui::TextDisabled("Please bring the Flash window into focus!");
+
         global::game.initialize();
 
         ImGui::EndTabItem();
@@ -253,7 +257,7 @@ void gui::renderCredits() {
   if (ImGui::BeginPopupModal("Credits", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
     ImGui::Text("Menu & mods created by Lucia (https://github.com/saturnaliam)");
     // TODO Add credits for Discord SDK, ImGui, and anything else that happens to come up
-    ImGui::Text("Discord SDK implementation created by ()");
+    ImGui::Text("DISCORD SDK CREDITS HERE");
     ImGui::Text("Made with Dear ImGui (https://github.com/ocornut/imgui)");
 
     if (ImGui::Button("Close")) {
@@ -291,8 +295,21 @@ void gui::renderValuesSection() {
   ImGui::SeparatorText("Game Values");
 
   ImGui::IntBox("Current Scene", *global::game.levelAddress);
+
+  if (global::game.hwnd == nullptr) {
+    ImGui::BeginDisabled();
+    ImGui::Text("There was an issue with detecting the Flash version! (Error 01)");
+  }
+  ImGui::IntBoxHalf("Relative Mouse Coordinates", global::game.mouseCoordinates);
+
+  ImGui::IntBoxHalf("Window Coordinates", global::game.windowCoordinates);
+  if (global::game.hwnd == nullptr) { ImGui::EndDisabled(); }
 }
 
 inline void ImGui::IntBox(const char* label, int v, const char* format) {
   ImGui::DragInt(label, &v, 0, NULL, NULL, format);
+}
+
+inline void ImGui::IntBoxHalf(const char* label, int v[2], const char* format) {
+  ImGui::DragInt2(label, v, 0, NULL, NULL, format);
 }

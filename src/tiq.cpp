@@ -33,9 +33,9 @@ BOOL CALLBACK Game::EnumWindowsProc(HWND hwnd, LPARAM lParam) {
   GetWindowThreadProcessId(hwnd, &processId);
 
   if (processId == targetProcessId) {
-    char windowTitle[256];
-    GetWindowTextA(hwnd, windowTitle, sizeof(windowTitle));
-    std::string windowTitle = windowTitle;
+    char windowTitleC[256];
+    GetWindowTextA(hwnd, windowTitleC, sizeof(windowTitleC));
+    std::string windowTitle = windowTitleC;
 
     if (windowTitle != global::menuTitle) {
       reinterpret_cast<Game*>(lParam)->hwnd = hwnd;
@@ -56,10 +56,6 @@ void Game::initialize() {
   this->getVersion();
 
   if (this->gameVersion != NONE) {
-    if (this->hwnd == nullptr) {
-      this->hwnd = FindWindowA(nullptr, this->detectedVersion.title.c_str());
-    }
-
     this->initialized = true;
 
     this->pointerOffsets = this->detectedVersion.pointerOffsets;
@@ -84,4 +80,33 @@ void Game::getLevelAddress() {
   }
 
   this->levelAddress = reinterpret_cast<uintptr_t*>(temp + this->pointerOffsets.back());
+}
+
+void Game::update() {
+  if (!this->initialized) return;
+
+  // parts that need HWND
+  if (this->hwnd == nullptr) {
+    EnumWindows(this->EnumWindowsProc, reinterpret_cast<LPARAM>(this));
+    return;
+  }
+  this->getCursorCoordinates();
+  this->getWindowCoordinates();
+}
+
+void Game::getWindowCoordinates() {
+  RECT windowRect;
+  GetWindowRect(this->hwnd, &windowRect);
+
+  this->windowCoordinates[0] = windowRect.right;
+  this->windowCoordinates[1] = windowRect.bottom;
+}
+
+void Game::getCursorCoordinates() {
+  POINT point;
+  GetCursorPos(&point);
+  ScreenToClient(this->hwnd, &point);
+
+  this->mouseCoordinates[0] = point.x;
+  this->mouseCoordinates[1] = point.y;
 }

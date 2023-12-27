@@ -24,13 +24,18 @@ class Game {
     static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
     void getVersion();
     void getLevelAddress();
+    void getWindowCoordinates();
+    void getCursorCoordinates();
 
   public:
     HWND hwnd;
-    bool initialized;
+    int windowCoordinates[2] = { 0, 0 };
+    int mouseCoordinates[2] = { 0, 0 };
     GameVersion detectedVersion;
     uintptr_t* levelAddress;
+    bool initialized;
 
     Game();
     void initialize();
+    void update();
 };

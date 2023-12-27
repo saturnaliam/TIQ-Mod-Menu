@@ -4,7 +4,7 @@
 namespace gui {
   static bool creditsOpened = false;
 
-  constexpr int WIDTH = 500;
+  constexpr int WIDTH = 600;
   constexpr int HEIGHT = 400;
 
   inline bool exit = true;
@@ -40,4 +40,5 @@ namespace gui {
 
 namespace ImGui {
   inline void IntBox(const char* label, int v, const char* format = "%d");
+  inline void IntBoxHalf(const char* label, int v[2], const char* format = "%d");
 }
