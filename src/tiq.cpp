@@ -20,22 +20,25 @@ void initFlashVersions() {
 
 Game::Game() {
   initFlashVersions();
+  this->hwnd = nullptr;
   this->initialized = false;
   this->gameVersion = NONE;
   this->levelAddress = nullptr;
 }
 
+// Callback function to get the HWND of Flash Player & to detect the version
 BOOL CALLBACK Game::EnumWindowsProc(HWND hwnd, LPARAM lParam) {
   DWORD targetProcessId = GetCurrentProcessId();
   DWORD processId;
   GetWindowThreadProcessId(hwnd, &processId);
 
   if (processId == targetProcessId) {
-    char windowTitleC[256];
-    GetWindowTextA(hwnd, windowTitleC, sizeof(windowTitleC));
-    std::string windowTitle = windowTitleC;
+    char windowTitle[256];
+    GetWindowTextA(hwnd, windowTitle, sizeof(windowTitle));
+    std::string windowTitle = windowTitle;
 
     if (windowTitle != global::menuTitle) {
+      reinterpret_cast<Game*>(lParam)->hwnd = hwnd;
       for (auto it : global::flashVersions) {
         if (windowTitle == it.title) {
           reinterpret_cast<Game*>(lParam)->detectedVersion = it;
@@ -53,6 +56,10 @@ void Game::initialize() {
   this->getVersion();
 
   if (this->gameVersion != NONE) {
+    if (this->hwnd == nullptr) {
+      this->hwnd = FindWindowA(nullptr, this->detectedVersion.title.c_str());
+    }
+
     this->initialized = true;
 
     this->pointerOffsets = this->detectedVersion.pointerOffsets;

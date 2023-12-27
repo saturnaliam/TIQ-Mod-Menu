@@ -2,8 +2,10 @@
 #include <d3d9.h>
 
 namespace gui {
-  constexpr int WIDTH = 400;
-  constexpr int HEIGHT = 500;
+  static bool creditsOpened = false;
+
+  constexpr int WIDTH = 500;
+  constexpr int HEIGHT = 400;
 
   inline bool exit = true;
 
@@ -30,6 +32,8 @@ namespace gui {
   void EndRender() noexcept;
   void Render() noexcept;
 
+  void renderCredits();
+  void renderMenu();
   void renderMemorySection();
   void renderValuesSection();
 }

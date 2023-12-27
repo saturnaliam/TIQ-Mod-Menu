@@ -19,15 +19,16 @@ struct GameVersion {
 
 class Game {
   private:
+    Version gameVersion;
+    std::vector<uint32_t> pointerOffsets;
     static BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam);
     void getVersion();
     void getLevelAddress();
-    GameVersion detectedVersion;
 
   public:
+    HWND hwnd;
     bool initialized;
-    Version gameVersion;
-    std::vector<uint32_t> pointerOffsets;
+    GameVersion detectedVersion;
     uintptr_t* levelAddress;
 
     Game();

@@ -1,5 +1,7 @@
 #include "gui.h"
 
+#include <format>
+
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_dx9.h"
 #include "../imgui/imgui_impl_win32.h"
@@ -80,7 +82,7 @@ void gui::CreateHWindow(const char* windowName, const char* className) noexcept 
 
 void gui::DestroyHWindow() noexcept {
   DestroyWindow(window);
-  UnregisterClass(windowClass.lpszClassName, windowClass.hInstance);
+  UnregisterClassA(windowClass.lpszClassName, windowClass.hInstance);
 }
 
 bool gui::CreateDevice() noexcept {
@@ -188,15 +190,13 @@ void gui::EndRender() noexcept {
 void gui::Render() noexcept {
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize({WIDTH, HEIGHT});
-  ImGui::Begin(global::menuTitle.c_str(), &exit, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove);
+  ImGui::Begin(global::menuTitle.c_str(), &exit, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar);
 
-  if (ImGui::BeginMenuBar()) {
-    if (ImGui::BeginMenu("Menu")) {
-      ImGui::MenuItem("About");
-      ImGui::EndMenu();
-    }
-    ImGui::EndMenuBar();
+  if (creditsOpened) {
+    renderCredits();
   }
+
+  renderMenu();
 
   ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_None;
 
@@ -228,16 +228,8 @@ void gui::Render() noexcept {
         ImGui::Combo("Flash Version", &current_version, flash_versions, IM_ARRAYSIZE(flash_versions));
         ImGui::SetItemTooltip("Select the current version of Flash Player\nor click on the Flash Player window.");
 
-        switch (current_version) {
-          case 0:
-            global::game.gameVersion = FL_32;
-            break;
-          case 1:
-            global::game.gameVersion = FL_11;
-            break;
-          default:
-            global::game.gameVersion = NONE;
-            break;
+        if (current_version != -1) {
+          global::game.detectedVersion = global::flashVersions[current_version];
         }
 
         global::game.initialize();
@@ -251,12 +243,45 @@ void gui::Render() noexcept {
   ImGui::End();
 }
 
+void gui::renderCredits() {
+  ImGui::OpenPopup("Credits");
+
+ ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+  ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+
+  if (ImGui::BeginPopupModal("Credits", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+    ImGui::Text("Menu & mods created by Lucia (https://github.com/saturnaliam)");
+    // TODO Add credits for Discord SDK, ImGui, and anything else that happens to come up
+    ImGui::Text("Discord SDK implementation created by ()");
+    ImGui::Text("Made with Dear ImGui (https://github.com/ocornut/imgui)");
+
+    if (ImGui::Button("Close")) {
+      creditsOpened = false;
+      ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::EndPopup();
+ }
+}
+
+void gui::renderMenu() {
+  if (ImGui::BeginMenuBar()) {
+    if (ImGui::BeginMenu("About")) {
+      ImGui::MenuItem(std::format("Ananke v{}", global::menuVersion).c_str(), NULL, false, false);
+      ImGui::MenuItem("Credits", NULL, &creditsOpened);
+      ImGui::EndMenu();
+    }
+    ImGui::EndMenuBar();
+  }
+}
+
 void gui::renderMemorySection() {
   ImGui::SeparatorText("Memory");
   ImGui::IntBox("Level Address", reinterpret_cast<int>(global::game.levelAddress), "0x%X");
 
   if (ImGui::CollapsingHeader("Pointer Offsets")) {
-    for (auto it : global::game.pointerOffsets) {
+    for (auto it : global::game.detectedVersion.pointerOffsets) {
       ImGui::BulletText("0x%X", it);
     }
   }
