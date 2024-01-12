@@ -192,7 +192,9 @@ void gui::Render() noexcept {
 
   ImGui::SetNextWindowPos({0, 0});
   ImGui::SetNextWindowSize({WIDTH, HEIGHT});
-  ImGui::Begin(global::menuTitle.c_str(), &exit, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar);
+  ImGui::Begin(std::format("{} v{}", global::menuTitle, global::menuVersion).c_str(), &exit, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar);
+
+  ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_None;
 
   if (creditsOpened) {
     renderCredits();
@@ -200,12 +202,9 @@ void gui::Render() noexcept {
 
   renderMenu();
 
-  ImGuiTabBarFlags tabFlags = ImGuiTabBarFlags_None;
-
-  if (ImGui::BeginTabBar("TabBar", tabFlags)) {
-    if (global::game.initialized) {
+  if (global::game.initialized) {
+    if (ImGui::BeginTabBar("TabBar", tabFlags)) {
       if (ImGui::BeginTabItem("Game Info")) {
-
         renderMemorySection();
 
         renderValuesSection();
@@ -220,39 +219,44 @@ void gui::Render() noexcept {
       if(ImGui::BeginTabItem("Level Chooser")) {
         ImGui::EndTabItem();
       }
-    } else {
-      // Detection of Flash Player version
-      if (ImGui::BeginTabItem("Flash Version")) {
-        ImGui::SeparatorText("Detecting Flash Version");
 
-        const char* flash_versions[] = {"Flash Player 32", "Flash Player 11"};
-        static int current_version = -1;
-        ImGui::Combo("Flash Version", &current_version, flash_versions, IM_ARRAYSIZE(flash_versions));
-        ImGui::SetItemTooltip("Select the current version of Flash Player\nor click on the Flash Player window.");
+      ImGui::EndTabItem();
 
-        if (current_version != -1) {
-          global::game.detectedVersion = global::flashVersions[current_version];
-        }
-
-        ImGui::TextDisabled("Please bring the Flash window into focus!");
-
-        global::game.initialize();
-
-        ImGui::EndTabItem();
-      }
+      ImGui::EndTabBar();
     }
+  } else {
+    // Detection of Flash Player version
+    ImGui::OpenPopup("Detecting Flash");
 
-    ImGui::EndTabBar();
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Detecting Flash", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+      ImGui::SeparatorText("Detecting Flash Version");
+
+      const char* flash_versions[] = {"Flash Player 32", "Flash Player 11"};
+      static int current_version = -1;
+      ImGui::Combo("Flash Version", &current_version, flash_versions, IM_ARRAYSIZE(flash_versions));
+      ImGui::SetItemTooltip("Select the current version of Flash Player\nor click on the Flash Player window.");
+
+      if (current_version != -1) {
+        global::game.detectedVersion = global::flashVersions[current_version];
+      }
+
+      global::game.initialize();
+
+      ImGui::EndPopup();
+    }
   }
+
   ImGui::End();
 }
 
 void gui::renderCredits() {
   ImGui::OpenPopup("Credits");
 
- ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+  ImVec2 center = ImGui::GetMainViewport()->GetCenter();
   ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
 
   if (ImGui::BeginPopupModal("Credits", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
     ImGui::Text("Menu & mods created by Lucia (https://github.com/saturnaliam)");
@@ -298,7 +302,7 @@ void gui::renderValuesSection() {
 
   if (global::game.hwnd == nullptr) {
     ImGui::BeginDisabled();
-    ImGui::Text("There was an issue with detecting the Flash version! (Error 01)");
+    ImGui::Text("Bring the Flash window into focus! (Error 01)");
   }
   ImGui::IntBoxHalf("Relative Mouse Coordinates", global::game.mouseCoordinates);
 
